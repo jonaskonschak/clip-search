@@ -10,7 +10,7 @@ Note: Dicts created with GPU currently do not seem to be compatible with running
 ```
 git clone https://github.com/openai/CLIP.git
 pip install -r CLIP/requirements.txt
-https://github.com/kanttouchthis/clip-search.git
+git clone https://github.com/kanttouchthis/clip-search.git
 ```
 
 ## Usage
