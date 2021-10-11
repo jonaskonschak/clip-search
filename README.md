@@ -1,4 +1,5 @@
 ﻿# clip-search
+(WIP)
 A simple tool for searching images with text/image input
 using [CLIP](https://github.com/openai/CLIP)
 
