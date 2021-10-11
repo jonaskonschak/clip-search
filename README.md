@@ -1,6 +1,6 @@
 ﻿# clip-search
 (WIP)
-A simple tool for searching images with text/image input
+A simple tool for searching images inside a local folder with text/image input
 using [CLIP](https://github.com/openai/CLIP)
 ![git](https://user-images.githubusercontent.com/90077736/136822402-f14a7ad4-6d72-4dba-8376-41521141210e.png)
 ## Installation
