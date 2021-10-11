@@ -8,9 +8,10 @@ Install [PyTorch](https://pytorch.org/get-started/locally/) with GPU support if 
 It works okay on CPU, but is a little bit slower  
 Note: Dicts created with GPU currently do not seem to be compatible with running on CPU and vice versa
 ```
+git clone https://github.com/kanttouchthis/clip-search.git
+cd clip-search
 git clone https://github.com/openai/CLIP.git
 pip install -r CLIP/requirements.txt
-git clone https://github.com/kanttouchthis/clip-search.git
 ```
 
 ## Usage
