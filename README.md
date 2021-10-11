@@ -23,7 +23,9 @@ python clip_search.py -f path/to/image/folder -r 5 -c -cr -t "a car"
 python clip_search.py -f path/to/image/folder -r 10 -d dict.pt -i image.png
 ```
 ```
-usage: clip_search.py [-h] [-t TEXT] [-i IMAGE] [-r RESULTS] [-se SAVE_EVERY] [-f FOLDER] [-d DICT] [-fo FORMAT] [-cf COPY_FOLDER] [-in] [-c] [-cr]
+usage: clip_search.py [-h] [-t TEXT] [-i IMAGE] [-r RESULTS] [-se SAVE_EVERY] [-f FOLDER] [-d DICT] [-de DEVICE] [-fo FORMAT] [-cf COPY_FOLDER] [-in] [-c] [-cr]
+
+(WIP) A simple tool for searching images inside a local folder with text/image input using CLIP
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -36,7 +38,9 @@ optional arguments:
                         Dictionary save frequency
   -f FOLDER, --folder FOLDER
                         Folder to scan
-  -d DICT, --dict DICT  Stored dictionary
+  -d DICT, --dict DICT  Stored dictionary file
+  -de DEVICE, --device DEVICE
+                        Device to use ("cuda" or "cpu")
   -fo FORMAT, --format FORMAT
                         Text search formatting
   -cf COPY_FOLDER, --copy_folder COPY_FOLDER
