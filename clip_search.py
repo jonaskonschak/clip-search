@@ -4,7 +4,6 @@ import os
 import shutil
 from timeit import default_timer as timer
 
-import matplotlib.pyplot as plt
 import torch
 from PIL import Image
 from torchvision.datasets import CIFAR100
@@ -130,4 +129,3 @@ if args.copy:
 
 end = timer()
 print(f"Processing time:{end-start:.3f}")
-
