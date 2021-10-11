@@ -13,7 +13,7 @@ start = timer()
 
 parser = argparse.ArgumentParser(description="(WIP) A simple tool for searching images "
                                              "inside a local folder with text/image input using CLIP")
-parser.add_argument("-t",  "--text",        type=str, default="",   help="Text search")
+parser.add_argument("-t",  "--text",        type=str, default=None,   help="Text search")
 parser.add_argument("-i",  "--image",       type=str, help="Image search")
 parser.add_argument("-r",  "--results",     type=int, default=5,    help="Number of search results to return")
 parser.add_argument("-se", "--save_every",  type=int, default=1000, help="Dictionary save frequency")
@@ -26,7 +26,7 @@ parser.add_argument("-in", "--initiate",    action="store_true",  help="Initiate
 parser.add_argument("-c",  "--copy",        action="store_true",  help="Copy images to results folder")
 parser.add_argument("-cr", "--copy_remove", action="store_true",  help="Remove old results from folder")
 args = parser.parse_args()
-assert args.text != "" or args.image, "Text or Image prompt required"
+assert args.text or args.image, "Text or Image prompt required"
 assert os.path.isdir(args.folder), f"Folder not found: {args.folder}"
 
 exts = ("jpg", "jpeg", "png", "jfif")
@@ -34,16 +34,6 @@ probs_dict = dict()
 images = []
 
 # Classes to compare against. Don't ask me why it works, I don't know
-classes = ['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl',
-           'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair',
-           'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin',
-           'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp',
-           'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse',
-           'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree',
-           'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose',
-           'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar',
-           'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train',
-           'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
 
 if args.device:
     device = args.device
@@ -52,20 +42,21 @@ else:
 
 model, preprocess = clip.load("ViT-B/32", device=device)
 print(f"Using Device: {device}")
+sim_func = torch.nn.CosineSimilarity()
 
 if args.dict is None:
     args.dict = f"{args.folder}_features.pt"
 
-with torch.no_grad():
-    texts = [f"{args.format}{args.text}"] + [f"{args.format}{c}" for c in classes]
-    text = clip.tokenize(texts).to(device)
-    target_features = model.encode_text(text)
-    target_features /= target_features.norm(dim=-1, keepdim=True)
-    if args.image:
+with torch.inference_mode():
+    if args.text:
+        texts = f"{args.format}{args.text}"
+        text = clip.tokenize(texts).to(device)
+        target_features = model.encode_text(text)
+        target_features /= target_features.norm(dim=-1, keepdim=True)
+    else:
         target_image = preprocess(Image.open(args.image)).unsqueeze(0).to(device)
-        target_image_features = model.encode_image(target_image)
-        target_image_features /= target_image_features.norm(dim=-1, keepdim=True)
-        target_features[0] = target_image_features
+        target_features = model.encode_image(target_image)
+        target_features /= target_features.norm(dim=-1, keepdim=True)
 
 
 def image_copy(a_list):
@@ -75,6 +66,10 @@ def image_copy(a_list):
     os.makedirs(args.copy_folder, exist_ok=True)
     for result in range(args.results):
         shutil.copy(f"{args.folder}/{a_list[result][0]}", args.copy_folder + "/")
+
+
+def get_sim(features):
+    return sim_func(image_features, target_features).item()
 
 
 def save_dict(dict_to_save, filename):
@@ -99,7 +94,7 @@ def load_dict(init, filename):
 image_dict = load_dict(args.initiate, args.dict)
 
 new_counter = 0
-with torch.no_grad():
+with torch.inference_mode():
     for idx, file in enumerate(os.listdir(args.folder)):
         if file.lower().endswith(exts):
             short_filename = file[:min(len(file), 20)]
@@ -118,9 +113,9 @@ with torch.no_grad():
             if new_counter % args.save_every == 0 and new_counter != 0:
                 save_dict(image_dict, args.dict)
                 
-            similarity = (image_features @ target_features.T).softmax(dim=-1)
-            print(f" | similarity {similarity[0][0]:.6f}")
-            probs_dict[file] = similarity[0][0]
+            sim = get_sim(image_features)
+            print(f" | similarity {sim:.6f}")
+            probs_dict[file] = sim
 
 if new_counter != 0:
     save_dict(image_dict, args.dict)
