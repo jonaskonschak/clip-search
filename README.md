@@ -4,6 +4,9 @@ A simple tool for searching images inside a local folder with text/image input
 using [CLIP](https://github.com/openai/CLIP)
 ![git](https://user-images.githubusercontent.com/90077736/136822402-f14a7ad4-6d72-4dba-8376-41521141210e.png)
 ## Installation
+Install [PyTorch](https://pytorch.org/get-started/locally/) with GPU support if you want to use GPU
+It works okay on CPU, but is a little bit slower
+Note: Dicts created with GPU currently do not seem to be compatible with running on CPU and vice versa
 ```
 git clone https://github.com/openai/CLIP.git
 pip install -r CLIP/requirements.txt
