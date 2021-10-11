@@ -6,7 +6,6 @@ from timeit import default_timer as timer
 
 import torch
 from PIL import Image
-from torchvision.datasets import CIFAR100
 
 from CLIP import clip
 
@@ -34,6 +33,18 @@ exts = ("jpg", "jpeg", "png", "jfif")
 probs_dict = dict()
 images = []
 
+# Classes to compare against. Don't ask me why it works, I don't know
+classes = ['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl',
+           'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair',
+           'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin',
+           'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp',
+           'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse',
+           'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree',
+           'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose',
+           'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar',
+           'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train',
+           'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
+
 if args.device:
     device = args.device
 else:
@@ -46,8 +57,7 @@ if args.dict is None:
     args.dict = f"{args.folder}_features.pt"
 
 with torch.no_grad():
-    cifar100 = CIFAR100(root=os.getcwd() + "/cifar", download=True, train=False)
-    texts = [f"{args.format}{args.text}"] + [f"{args.format}{c}" for c in cifar100.classes]
+    texts = [f"{args.format}{args.text}"] + [f"{args.format}{c}" for c in classes]
     text = clip.tokenize(texts).to(device)
     target_features = model.encode_text(text)
     target_features /= target_features.norm(dim=-1, keepdim=True)
