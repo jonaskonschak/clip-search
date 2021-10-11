@@ -2,7 +2,7 @@
 (WIP)
 A simple tool for searching images with text/image input
 using [CLIP](https://github.com/openai/CLIP)
-
+![git](https://user-images.githubusercontent.com/90077736/136821981-51cff180-4122-42c8-9473-34808edd329a.png)
 ## Installation
 ```
 git clone https://github.com/openai/CLIP.git
