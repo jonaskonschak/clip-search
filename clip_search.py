@@ -20,6 +20,7 @@ parser.add_argument("-r",  "--results",     type=int, default=5,    help="Number
 parser.add_argument("-se", "--save_every",  type=int, default=1000, help="Dictionary save frequency")
 parser.add_argument("-f",  "--folder",      type=str, default="images", help="Folder to scan")
 parser.add_argument("-d",  "--dict",        type=str, default=None, help="Stored dictionary file")
+parser.add_argument("-de", "--device",      type=str, default=None, help="Device to use (\"cuda\" or \"cpu\")")
 parser.add_argument("-fo", "--format",      type=str, default="a picture of ",  help="Text search formatting")
 parser.add_argument("-cf", "--copy_folder", type=str, default="results",  help="Results folder")
 parser.add_argument("-in", "--initiate",    action="store_true",  help="Initiate new dictionary (overwrite if exists)")
@@ -33,7 +34,11 @@ exts = ("jpg", "jpeg", "png", "jfif")
 probs_dict = dict()
 images = []
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+if args.device:
+    device = args.device
+else:
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
 model, preprocess = clip.load("ViT-B/32", device=device)
 print(f"Using Device: {device}")
 
@@ -72,7 +77,7 @@ def load_dict(init, filename):
         loaded_dict = dict()
     else:
         try:
-            loaded_dict = torch.load(filename)
+            loaded_dict = torch.load(filename, map_location=device)
         except FileNotFoundError:
             print("No dict found")
             loaded_dict = dict()
