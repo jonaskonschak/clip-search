@@ -2,7 +2,8 @@
 (WIP)
 A simple tool for searching images inside a local folder with text/image input
 using [CLIP](https://github.com/openai/CLIP)
-![git](https://user-images.githubusercontent.com/90077736/136822402-f14a7ad4-6d72-4dba-8376-41521141210e.png)
+![git](https://user-images.githubusercontent.com/90077736/136833546-b153204c-a37a-440f-bfc3-35532007c554.png)
+10 results for "a blonde woman" in a folder of 30k randomly generated faces
 ## Installation
 Install [PyTorch](https://pytorch.org/get-started/locally/) with GPU support if you want to use GPU  
 It works okay on CPU, but is a little bit slower  
