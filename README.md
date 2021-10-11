@@ -2,6 +2,7 @@
 (WIP)
 A simple tool for searching images inside a local folder with text/image input
 using [CLIP](https://github.com/openai/CLIP)
+  
 ![git](https://user-images.githubusercontent.com/90077736/136833546-b153204c-a37a-440f-bfc3-35532007c554.png)
 10 results for "a blonde woman" in a folder of 30k randomly generated faces
 ## Installation
