@@ -12,7 +12,7 @@ from CLIP import clip
 
 start = timer()
 
-parser = argparse.ArgumentParser(description="")
+parser = argparse.ArgumentParser(description="(WIP) A simple tool for searching images inside a local folder with text/image input using CLIP")
 parser.add_argument("-t",  "--text",        type=str, default="",   help="Text search")
 parser.add_argument("-i",  "--image",       type=str, help="Image search")
 parser.add_argument("-r",  "--results",     type=int, default=5,    help="Number of search results to return")
