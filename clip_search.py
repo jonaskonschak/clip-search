@@ -37,7 +37,6 @@ def load_dict(filename):
             print("No dict found")
             loaded_dict = dict()
             pass
-
     return loaded_dict
 
 
@@ -141,6 +140,7 @@ if __name__ == "__main__":
                 for (t, f) in targets.items():
                     sim = get_sim(image_features, t)
                     target_probs_dict[t][file] = sim
+        print(f"Loaded {counter} images. {new_counter} new  | Finished")
 
     if new_counter != 0:
         save_dict(image_dict, args.dict)
@@ -159,4 +159,4 @@ if __name__ == "__main__":
             image_copy(a, folder)
 
     end = timer()
-    print(f"Processing time:{end-start:.3f}")
+    print(f"Processing time: {end-start:.3f} seconds")
