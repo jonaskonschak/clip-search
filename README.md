@@ -7,8 +7,8 @@ using [CLIP](https://github.com/openai/CLIP)
 10 results for "a blonde woman" in a folder of 30k randomly generated faces
 ## Installation
 Install [PyTorch](https://pytorch.org/get-started/locally/) with GPU support if you want to use GPU  
-It works okay on CPU, but is a little slower  
-Note: Dicts created with GPU currently do not seem to be compatible with running on CPU and vice versa
+Initially encoding images might run faster with GPU, 
+but from limited testing it seems like searching with a saved dictionary might be faster on cpu.
 ```
 git clone https://github.com/kanttouchthis/clip-search.git
 cd clip-search
