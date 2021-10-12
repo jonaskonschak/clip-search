@@ -19,11 +19,12 @@ pip install -r CLIP/requirements.txt
 ## Usage
 Basic Usage:
 ```
+#Any amount/combination of text/image prompts is possible
 #Copy 5 results for the text search "a car" to the results folder (and initiate dictionary if it doesn't exist)
 python clip_search.py -f path/to/image/folder -r 5 -c -cr -t "a car"
 
-#Return 10 results for the image search image.png using dictionary dict.pt, without copying the images (only return names)
-python clip_search.py -f path/to/image/folder -r 10 -d dict.pt -i image.png
+#Return 10 results for image.png and "a car" each using dictionary dict.pt, without copying the images (only return names)
+python clip_search.py -f path/to/image/folder -r 10 -d dict.pt -t "a car" -i image.png
 ```
 ```
 usage: clip_search.py [-h] [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-se SAVE_EVERY] [-f FOLDER] [-d DICT] [-de DEVICE] [-fo FORMAT] [-cf COPY_FOLDER] [-in] [-c] [-cr]
