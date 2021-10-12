@@ -69,18 +69,30 @@ if __name__ == "__main__":
     start = timer()
     parser = argparse.ArgumentParser(description="(WIP) A simple tool for searching images "
                                                  "inside a local folder with text/image input using CLIP")
-    parser.add_argument("-t",  "--texts",        type=str, nargs="+",    default=None,   help="Texts to search for")
-    parser.add_argument("-i",  "--images",       type=str, nargs="+",    default=None,   help="Images to search for")
-    parser.add_argument("-r",  "--results",     type=int, default=5,    help="Number of search results to return")
-    parser.add_argument("-se", "--save_every",  type=int, default=1000, help="Dictionary save frequency")
-    parser.add_argument("-f",  "--folder",      type=str, default="images", help="Folder to scan")
-    parser.add_argument("-d",  "--dict",        type=str, default=None, help="Stored dictionary file")
-    parser.add_argument("-de", "--device",      type=str, default=None, help="Device to use (\"cuda\" or \"cpu\")")
-    parser.add_argument("-fo", "--format",      type=str, default="a picture of ",  help="Text search formatting")
-    parser.add_argument("-cf", "--copy_folder", type=str, default="results",  help="Results folder")
-    parser.add_argument("-in", "--initiate",    action="store_true",  help="Initiate new dictionary (overwrite)")
-    parser.add_argument("-c",  "--copy",        action="store_true",  help="Copy images to results folder")
-    parser.add_argument("-cr", "--copy_remove", action="store_true",  help="Remove old results from folder")
+    parser.add_argument("-t",  "--texts",       type=str, nargs="+",    default=None,
+                        help="Texts to search for: \"a house\" \"an old man\"")
+    parser.add_argument("-i",  "--images",      type=str, nargs="+",    default=None,
+                        help="Images to search for: \"/path/to/img1.jpg\" \"path/to/img2.jpg\"")
+    parser.add_argument("-r",  "--results",     type=int, default=5,
+                        help="Number of search results to return. Default: 5")
+    parser.add_argument("-se", "--save_every",  type=int, default=1000,
+                        help="Dictionary save frequency. Default: 1000")
+    parser.add_argument("-f",  "--folder",      type=str, default="images",
+                        help="Folder to scan. Default: images")
+    parser.add_argument("-d",  "--dict",        type=str, default=None,
+                        help="Stored dictionary file")
+    parser.add_argument("-de", "--device",      type=str, default=None,
+                        help="Device to use (\"cuda\" or \"cpu\"). Default: cuda if available")
+    parser.add_argument("-fo", "--format",      type=str, default="a picture of ",
+                        help="Text search formatting. Default=\"a picture of {text prompt}\"")
+    parser.add_argument("-cf", "--copy_folder", type=str, default="results",
+                        help="Results folder. Default: results")
+    parser.add_argument("-in", "--initiate",    action="store_true",
+                        help="Initiate new dictionary (overwrite)")
+    parser.add_argument("-c",  "--copy",        action="store_true",
+                        help="Copy images to results folder")
+    parser.add_argument("-cr", "--copy_remove", action="store_true",
+                        help="Remove old results from folder")
     args = parser.parse_args()
     assert args.texts or args.images, "Text or Image prompt required"
     assert os.path.isdir(args.folder), f"Folder not found: {args.folder}"

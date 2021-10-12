@@ -34,22 +34,22 @@ usage: clip_search.py [-h] [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r R
 optional arguments:
   -h, --help            show this help message and exit
   -t TEXTS [TEXTS ...], --texts TEXTS [TEXTS ...]
-                        Texts to search for
+                        Texts to search for: "a house" "an old man"
   -i IMAGES [IMAGES ...], --images IMAGES [IMAGES ...]
-                        Images to search for
+                        Images to search for: "/path/to/img1.jpg" "path/to/img2.jpg"
   -r RESULTS, --results RESULTS
-                        Number of search results to return
+                        Number of search results to return. Default: 5
   -se SAVE_EVERY, --save_every SAVE_EVERY
-                        Dictionary save frequency
+                        Dictionary save frequency. Default: 1000
   -f FOLDER, --folder FOLDER
-                        Folder to scan
+                        Folder to scan. Default: images
   -d DICT, --dict DICT  Stored dictionary file
   -de DEVICE, --device DEVICE
-                        Device to use ("cuda" or "cpu")
+                        Device to use ("cuda" or "cpu"). Default: cuda if available
   -fo FORMAT, --format FORMAT
-                        Text search formatting
+                        Text search formatting. Default="a picture of {text prompt}"
   -cf COPY_FOLDER, --copy_folder COPY_FOLDER
-                        Results folder
+                        Results folder. Default: results
   -in, --initiate       Initiate new dictionary (overwrite)
   -c, --copy            Copy images to results folder
   -cr, --copy_remove    Remove old results from folder
