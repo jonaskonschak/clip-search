@@ -117,38 +117,38 @@ if __name__ == "__main__":
         target_probs_dict = dict()
         for target in targets.keys():
             target_probs_dict[target] = dict()
-
+        counter = 0
         new_counter = 0
         for idx, file in enumerate(os.listdir(args.folder)):
             if file.lower().endswith(exts):
                 short_filename = file[:min(len(file), 20)]
                 if file in image_dict:
-                    print(f"{short_filename:20s} saved {idx:06d}", end="")
                     image_features = image_dict[file].to(device)
 
                 else:
-                    print(f"{short_filename:26s} {idx:06d}", end="")
                     image = preprocess(Image.open(f"{args.folder}/{file}")).unsqueeze(0).to(device)
                     image_features = model.encode_image(image)
                     image_features /= image_features.norm(dim=-1, keepdim=True)
                     image_dict[file] = image_features
                     new_counter += 1
 
+                counter += 1
                 if new_counter % args.save_every == 0 and new_counter != 0:
                     save_dict(image_dict, args.dict)
+                if counter % args.save_every == 0:
+                    print(f"Loaded {counter} images. {new_counter} new")
 
                 for (t, f) in targets.items():
                     sim = get_sim(image_features, t)
-                    print(f"|{sim*100:.3f}%", end="")
                     target_probs_dict[t][file] = sim
-                print("")
+
     if new_counter != 0:
         save_dict(image_dict, args.dict)
     for t in target_probs_dict.keys():
         heap = heapq.nlargest(args.results, target_probs_dict[t], key=target_probs_dict[t].get)
         a = sorted({image: target_probs_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
         print("-"*55)
-        print(f"Results for {t}:")
+        print(f"Results for \"{args.format + t}:\"")
         print("-"*55)
         for i in range(args.results):
             print(f"{a[i][0][:min(len(file), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
