@@ -10,17 +10,16 @@ from PIL import Image
 from CLIP import clip
 
 
-def image_copy(a_list):
-    print("copying")
+def image_copy(a_list, copy_folder):
     if args.copy_remove:
-        shutil.rmtree(args.copy_folder, ignore_errors=True)
-    os.makedirs(args.copy_folder, exist_ok=True)
+        shutil.rmtree(copy_folder, ignore_errors=True)
+    os.makedirs(copy_folder, exist_ok=True)
     for result in range(args.results):
-        shutil.copy(f"{args.folder}/{a_list[result][0]}", args.copy_folder + "/")
+        shutil.copy(f"{args.folder}/{a_list[result][0]}", copy_folder + "/")
 
 
-def get_sim(features):
-    return sim_func(features, target_features).item()
+def get_sim(features, target_name):
+    return sim_func(features, targets[target_name]).item()
 
 
 def save_dict(dict_to_save, filename):
@@ -42,12 +41,36 @@ def load_dict(filename):
     return loaded_dict
 
 
+def get_targets():
+    input_targets = dict()
+    if args.texts:
+        for arg_text in args.texts:
+            target_text = f"{args.format}{arg_text}"
+            target_text = clip.tokenize(target_text).to(device)
+            target_features = model.encode_text(target_text)
+            target_features /= target_features.norm(dim=-1, keepdim=True)
+            input_targets.update({arg_text: target_features})
+    if args.images:
+        for arg_image in args.images:
+            target_image = preprocess(Image.open(arg_image)).unsqueeze(0).to(device)
+            target_features = model.encode_image(target_image)
+            target_features /= target_features.norm(dim=-1, keepdim=True)
+            base_filename = os.path.basename(arg_image)
+            filename = base_filename
+            filename_idx = 2
+            while filename in input_targets.keys():
+                filename = base_filename + f"_{filename_idx}"
+                filename_idx += 1
+            input_targets.update({filename: target_features})
+    return input_targets
+
+
 if __name__ == "__main__":
     start = timer()
     parser = argparse.ArgumentParser(description="(WIP) A simple tool for searching images "
                                                  "inside a local folder with text/image input using CLIP")
-    parser.add_argument("-t",  "--text",        type=str, default=None,   help="Text search")
-    parser.add_argument("-i",  "--image",       type=str, help="Image search")
+    parser.add_argument("-t",  "--texts",        type=str, nargs="+",    default=None,   help="Texts to search for")
+    parser.add_argument("-i",  "--images",       type=str, nargs="+",    default=None,   help="Images to search for")
     parser.add_argument("-r",  "--results",     type=int, default=5,    help="Number of search results to return")
     parser.add_argument("-se", "--save_every",  type=int, default=1000, help="Dictionary save frequency")
     parser.add_argument("-f",  "--folder",      type=str, default="images", help="Folder to scan")
@@ -59,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("-c",  "--copy",        action="store_true",  help="Copy images to results folder")
     parser.add_argument("-cr", "--copy_remove", action="store_true",  help="Remove old results from folder")
     args = parser.parse_args()
-    assert args.text or args.image, "Text or Image prompt required"
+    assert args.texts or args.images, "Text or Image prompt required"
     assert os.path.isdir(args.folder), f"Folder not found: {args.folder}"
 
     exts = ("jpg", "jpeg", "png", "jfif")
@@ -77,18 +100,12 @@ if __name__ == "__main__":
     sim_func = torch.nn.CosineSimilarity()
 
     with torch.inference_mode():
-        if args.text:
-            texts = f"{args.format}{args.text}"
-            text = clip.tokenize(texts).to(device)
-            target_features = model.encode_text(text)
-            target_features /= target_features.norm(dim=-1, keepdim=True)
-        else:
-            target_image = preprocess(Image.open(args.image)).unsqueeze(0).to(device)
-            target_features = model.encode_image(target_image)
-            target_features /= target_features.norm(dim=-1, keepdim=True)
-
+        targets = get_targets()
         image_dict = load_dict(args.dict)
-        probs_dict = dict()
+        target_probs_dict = dict()
+        for target in targets.keys():
+            target_probs_dict[target] = dict()
+
         new_counter = 0
         for idx, file in enumerate(os.listdir(args.folder)):
             if file.lower().endswith(exts):
@@ -108,25 +125,26 @@ if __name__ == "__main__":
                 if new_counter % args.save_every == 0 and new_counter != 0:
                     save_dict(image_dict, args.dict)
 
-                sim = get_sim(image_features)
-                print(f" | similarity {sim*100:.3f}%")
-                probs_dict[file] = sim
-
+                for (t, f) in targets.items():
+                    sim = get_sim(image_features, t)
+                    print(f"|{sim*100:.3f}%", end="")
+                    target_probs_dict[t][file] = sim
+                print("")
     if new_counter != 0:
         save_dict(image_dict, args.dict)
+    for t in target_probs_dict.keys():
+        heap = heapq.nlargest(args.results, target_probs_dict[t], key=target_probs_dict[t].get)
+        a = sorted({image: target_probs_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
+        print("-"*55)
+        print(f"Results for {t}:")
+        print("-"*55)
+        for i in range(args.results):
+            print(f"{a[i][0][:min(len(file), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
+        print("-"*55)
 
-    heap = heapq.nlargest(args.results, probs_dict, key=probs_dict.get)
-    a = sorted({image: probs_dict[image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
-
-    print("-"*55)
-    print("Results:")
-    print("-"*55)
-    for i in range(args.results):
-        print(f"{a[i][0][:min(len(file), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
-    print("-"*55)
-
-    if args.copy:
-        image_copy(a)
+        folder = f"{args.copy_folder}/" + t.replace(".", "_")
+        if args.copy:
+            image_copy(a, folder)
 
     end = timer()
     print(f"Processing time:{end-start:.3f}")
