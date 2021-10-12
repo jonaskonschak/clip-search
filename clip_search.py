@@ -18,10 +18,6 @@ def image_copy(a_list, copy_folder):
         shutil.copy(f"{args.folder}/{a_list[result][0]}", copy_folder + "/")
 
 
-def get_sim(features, target_name):
-    return sim_func(features, targets[target_name]).item()
-
-
 def save_dict(dict_to_save, filename):
     torch.save(dict_to_save, filename)
 
@@ -37,7 +33,6 @@ def load_dict(filename):
             print("No dict found")
             loaded_dict = dict()
             pass
-
     return loaded_dict
 
 
@@ -124,39 +119,39 @@ if __name__ == "__main__":
                 short_filename = file[:min(len(file), 20)]
                 if file in image_dict:
                     image_features = image_dict[file].to(device)
-
                 else:
+                    # Load image file and get features
                     image = preprocess(Image.open(f"{args.folder}/{file}")).unsqueeze(0).to(device)
                     image_features = model.encode_image(image)
                     image_features /= image_features.norm(dim=-1, keepdim=True)
                     image_dict[file] = image_features
                     new_counter += 1
-
                 counter += 1
                 if new_counter % args.save_every == 0 and new_counter != 0:
                     save_dict(image_dict, args.dict)
                 if counter % args.save_every == 0:
                     print(f"Loaded {counter} images. {new_counter} new")
-
                 for (t, f) in targets.items():
-                    sim = get_sim(image_features, t)
-                    target_probs_dict[t][file] = sim
+                    # Get similarity of image and each target
+                    target_probs_dict[t][file] = sim_func(image_features, f).item()
+        print(f"Loaded {counter} images. {new_counter} new  | Finished")
 
     if new_counter != 0:
         save_dict(image_dict, args.dict)
     for t in target_probs_dict.keys():
+        # Sort for highest similarity
         heap = heapq.nlargest(args.results, target_probs_dict[t], key=target_probs_dict[t].get)
         a = sorted({image: target_probs_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
+        # Print fancy results
         print("-"*55)
         print(f"Results for \"{args.format + t}:\"")
         print("-"*55)
         for i in range(args.results):
             print(f"{a[i][0][:min(len(file), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
         print("-"*55)
-
         folder = f"{args.copy_folder}/" + t.replace(".", "_")
         if args.copy:
             image_copy(a, folder)
 
     end = timer()
-    print(f"Processing time:{end-start:.3f}")
+    print(f"Processing time: {end-start:.3f} seconds")
