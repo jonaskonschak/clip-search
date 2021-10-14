@@ -137,7 +137,7 @@ if __name__ == "__main__":
         sim_dict = dict()
         for target_name in targets.keys():
             sim_dict[target_name] = dict()
-            [get_sim(file) for file in os.listdir(args.folder)]
+        [get_sim(file) for file in os.listdir(args.folder)]
         print(f"Loaded {counter} images. {new_counter} new  | Finished")
 
     if new_counter != 0:
