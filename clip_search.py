@@ -15,7 +15,7 @@ def image_copy(a_list, copy_folder):
         shutil.rmtree(copy_folder, ignore_errors=True)
     os.makedirs(copy_folder, exist_ok=True)
     for result in range(args.results):
-        shutil.copy(f"{args.folder}/{a_list[result][0]}", copy_folder + "/")
+        shutil.copy(f"{a_list[result][0]}", copy_folder + "/")
 
 
 def load_dict(filename):
@@ -64,7 +64,7 @@ def load_and_get_sim(filename):
             image_features = image_dict[filename]
         else:
             # Load image file and get features
-            image = preprocess(Image.open(f"{args.folder}/{filename}")).unsqueeze(0).to(device)
+            image = preprocess(Image.open(filename)).unsqueeze(0).to(device)
             image_features = model.encode_image(image)
             image_features /= image_features.norm(dim=-1, keepdim=True)
             image_dict[filename] = image_features
@@ -107,6 +107,8 @@ if __name__ == "__main__":
                         help="Copy images to results folder")
     parser.add_argument("-cr", "--copy_remove", action="store_true",
                         help="Remove old results from folder")
+    parser.add_argument("-rc",  "--recursive",   action="store_true",
+                        help="Recursive search")
     args = parser.parse_args()
     assert args.texts or args.images, "Text or Image prompt required"
     assert os.path.isdir(args.folder), f"Folder not found: {args.folder}"
@@ -131,13 +133,21 @@ if __name__ == "__main__":
     start = timer()
     counter = 0
     new_counter = 0
+    if args.recursive:
+        images = []
+        for path, _, files in os.walk(args.folder):
+            for file in files:
+                if file.lower().endswith(exts):
+                    images.append(os.path.join(path, file))
+    else:
+        images = [os.path.join(args.folder, file) for file in os.listdir(args.folder) if file.lower().endswith(exts)]
     with torch.inference_mode():
         targets = get_targets()
         image_dict = load_dict(args.dict)
         sim_dict = dict()
         for target_name in targets.keys():
             sim_dict[target_name] = dict()
-        [get_sim(file) for file in os.listdir(args.folder)]
+        [get_sim(file) for file in images]
         print(f"Loaded {counter} images. {new_counter} new  | Finished")
 
     if new_counter != 0:
@@ -151,7 +161,7 @@ if __name__ == "__main__":
         print(f"Results for \"{args.format + t}:\"")
         print("-"*55)
         for i in range(args.results):
-            print(f"{a[i][0][:min(len(a[i][0]), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
+            print(f"{os.path.basename(a[i][0])[:min(len(a[i][0]), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
         print("-"*55)
         folder = f"{args.copy_folder}/" + t.replace(".", "_")
         if args.copy:
