@@ -27,7 +27,7 @@ python clip_search.py -f path/to/image/folder -r 5 -c -cr -t "a car"
 python clip_search.py -f path/to/image/folder -r 10 -d dict.pt -t "a car" -i image.png
 ```
 ```
-usage: clip_search.py [-h] [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-se SAVE_EVERY] [-f FOLDER] [-d DICT] [-de DEVICE] [-fo FORMAT] [-cf COPY_FOLDER] [-in] [-c] [-cr]
+usage: clip_search.py [-h] [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-se SAVE_EVERY] [-f FOLDER] [-d DICT] [-de DEVICE] [-fo FORMAT] [-cf COPY_FOLDER] [-in] [-c] [-cr] [-rc]
 
 (WIP) A simple tool for searching images inside a local folder with text/image input using CLIP
 
@@ -53,5 +53,5 @@ optional arguments:
   -in, --initiate       Initiate new dictionary (overwrite)
   -c, --copy            Copy images to results folder
   -cr, --copy_remove    Remove old results from folder
-
+  -rc, --recursive      Recursive search
 ```
