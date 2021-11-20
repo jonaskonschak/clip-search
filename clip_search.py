@@ -141,6 +141,8 @@ if __name__ == "__main__":
                     images.append(os.path.join(path, file))
     else:
         images = [os.path.join(args.folder, file) for file in os.listdir(args.folder) if file.lower().endswith(exts)]
+    if len(images) == 0:
+        exit("No images were found in the specified directory. Be sure the specified directory contains images, or you set the \"-rc\" flag to search subfolders.")
     with torch.inference_mode():
         targets = get_targets()
         image_dict = load_dict(args.dict)
@@ -156,12 +158,20 @@ if __name__ == "__main__":
         # Sort for highest similarity
         heap = heapq.nlargest(args.results, sim_dict[t], key=sim_dict[t].get)
         a = sorted({image: sim_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
+        # Sanity check that we actually get results back, shouldn't be needed
+        if len(a) == 0:
+            print("-"*55)
+            print(f"No results for \"{args.format + t}:\"")
+            print("-"*55)
+            continue
         # Print fancy results
         print("-"*55)
         print(f"Results for \"{args.format + t}:\"")
         print("-"*55)
         for i in range(args.results):
-            print(f"{os.path.basename(a[i][0])[:min(len(a[i][0]), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
+            # Change image path output to include the subfolder if recursive
+            image_path = os.path.basename(a[i][0]) if not args.recursive else os.path.relpath(a[i][0], args.folder)
+            print(f"{i:03d} | similarity {a[i][1]*100:.3f}% | {image_path}")
         print("-"*55)
         folder = f"{args.copy_folder}/" + t.replace(".", "_")
         if args.copy:
