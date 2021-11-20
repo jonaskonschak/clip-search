@@ -33,14 +33,17 @@ def load_dict(filename):
 
 
 def get_targets():
-    input_targets = dict()
+    targets = []
+    target_tensors = []
     if args.texts:
         for arg_text in args.texts:
             target_text = f"{args.format}{arg_text}"
             target_text = clip.tokenize(target_text).to(device)
             target_features = model.encode_text(target_text)
             target_features /= target_features.norm(dim=-1, keepdim=True)
-            input_targets.update({arg_text: target_features})
+            targets.append(arg_text)
+            target_tensors.append(target_features)
+
     if args.images:
         for arg_image in args.images:
             target_image = preprocess(Image.open(arg_image)).unsqueeze(0).to(device)
@@ -49,34 +52,29 @@ def get_targets():
             base_filename = os.path.basename(arg_image)
             filename = base_filename
             filename_idx = 2
-            while filename in input_targets.keys():
+            while filename in targets:
                 filename = base_filename + f"_{filename_idx}"
                 filename_idx += 1
-            input_targets.update({filename: target_features})
-    return input_targets
+            targets.append(filename)
+            target_tensors.append(target_features)
+    return targets, torch.cat(target_tensors)
 
 
-def load_and_get_sim(filename):
+def load_file(filename):
     global counter
     global new_counter
-    if filename.lower().endswith(exts):
-        if filename in image_dict:
-            image_features = image_dict[filename]
-        else:
-            # Load image file and get features
-            image = preprocess(Image.open(filename)).unsqueeze(0).to(device)
-            image_features = model.encode_image(image)
-            image_features /= image_features.norm(dim=-1, keepdim=True)
-            image_dict[filename] = image_features
-            new_counter += 1
+    if filename.lower().endswith(exts) and filename not in image_dict:
+        # Load image file and get features
+        image = preprocess(Image.open(filename)).unsqueeze(0).to(device)
+        image_features = model.encode_image(image)
+        image_features /= image_features.norm(dim=-1, keepdim=True)
+        image_dict[filename] = image_features
+        new_counter += 1
         counter += 1
         if new_counter % args.save_every == 0 and new_counter != 0:
             torch.save(image_dict, args.dict)
         if counter % args.save_every == 0:
             print(f"Loaded {counter} images. {new_counter} new")
-        for (target, features) in targets.items():
-            # Get similarity of image and each target
-            sim_dict[target][filename] = sim_func(image_features, features).item()
 
 
 if __name__ == "__main__":
@@ -122,60 +120,61 @@ if __name__ == "__main__":
 
     if args.dict is None:
         args.dict = f"{args.folder}_features.pt"
-
-    print(f"Using Device: {device}\nLoading model...", end=" ")
-    model, preprocess = clip.load("ViT-B/32", device=device)
-    print("Done")
-    sim_func = torch.nn.CosineSimilarity()
-    get_sim = load_and_get_sim
-    load_end = timer()
-    print(f"Loading time: {load_end - load_start:.3f} seconds")
-    start = timer()
-    counter = 0
-    new_counter = 0
-    if args.recursive:
-        images = []
-        for path, _, files in os.walk(args.folder):
-            for file in files:
-                if file.lower().endswith(exts):
-                    images.append(os.path.join(path, file))
-    else:
-        images = [os.path.join(args.folder, file) for file in os.listdir(args.folder) if file.lower().endswith(exts)]
-    if len(images) == 0:
-        exit("No images were found in the specified directory. Be sure the specified directory contains images, or you set the \"-rc\" flag to search subfolders.")
     with torch.inference_mode():
-        targets = get_targets()
+        print(f"Using Device: {device}\nLoading model...", end=" ")
+        model, preprocess = clip.load("ViT-B/32", device=device)
+        print("Done")
+        load_end = timer()
+        print(f"Loading time: {load_end - load_start:.3f} seconds")
+        start = timer()
+        counter = 0
+        new_counter = 0
+        if args.recursive:
+            images = []
+            for path, _, files in os.walk(args.folder):
+                for file in files:
+                    if file.lower().endswith(exts):
+                        images.append(os.path.join(path, file))
+        else:
+            images = [os.path.join(args.folder, file) for file in os.listdir(args.folder) if file.lower().endswith(exts)]
+        if len(images) == 0:
+            exit("No images were found in the specified directory. Be sure the specified directory contains images, or you set the \"-rc\" flag to search subfolders.")
+
+        target_list, target_tensor = get_targets()
         image_dict = load_dict(args.dict)
-        sim_dict = dict()
-        for target_name in targets.keys():
-            sim_dict[target_name] = dict()
-        [get_sim(file) for file in images]
+        sim_dict = {target: torch.tensor for target in target_list}
+        [load_file(file) for file in images]
+
+        image_list = list(image_dict.keys())
+        image_tensor = torch.cat(list(image_dict.values())).to(torch.float if args.device == "cpu" else torch.half)
+        sim_list = (target_tensor @ image_tensor.T).tolist()  # Dot-product with transposed image tensor to get similarity
+        sim_dict = {target: dict(zip(image_list, sim_list[i])) for i, target in enumerate(target_list)}
         print(f"Loaded {counter} images. {new_counter} new  | Finished")
 
-    if new_counter != 0:
-        torch.save(image_dict, args.dict)
-    for t in sim_dict.keys():
-        # Sort for highest similarity
-        heap = heapq.nlargest(args.results, sim_dict[t], key=sim_dict[t].get)
-        a = sorted({image: sim_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
-        # Sanity check that we actually get results back, shouldn't be needed
-        if len(a) == 0:
+        if new_counter != 0:
+            torch.save(image_dict, args.dict)
+        for t in sim_dict.keys():
+            # Sort for highest similarity
+            heap = heapq.nlargest(args.results, sim_dict[t], key=sim_dict[t].get)
+            a = sorted({image: sim_dict[t][image] for image in heap}.items(), key=lambda x: x[1], reverse=True)
+            # Sanity check that we actually get results back, shouldn't be needed
+            if len(a) == 0:
+                print("-"*55)
+                print(f"No results for \"{args.format + t}:\"")
+                print("-"*55)
+                continue
+            # Print fancy results
             print("-"*55)
-            print(f"No results for \"{args.format + t}:\"")
+            print(f"Results for \"{args.format + t}:\"")
             print("-"*55)
-            continue
-        # Print fancy results
-        print("-"*55)
-        print(f"Results for \"{args.format + t}:\"")
-        print("-"*55)
-        for i in range(args.results):
-            # Change image path output to include the subfolder if recursive
-            image_path = os.path.basename(a[i][0]) if not args.recursive else os.path.relpath(a[i][0], args.folder)
-            print(f"{i:03d} | similarity {a[i][1]*100:.3f}% | {image_path}")
-        print("-"*55)
-        folder = f"{args.copy_folder}/" + t.replace(".", "_")
-        if args.copy:
-            image_copy(a, folder)
+            for i in range(args.results):
+                # Change image path output to include the subfolder if recursive
+                image_path = os.path.basename(a[i][0]) if not args.recursive else os.path.relpath(a[i][0], args.folder)
+                print(f"{i:03d} | similarity {a[i][1]*100:.3f}% | {image_path}")
+            print("-"*55)
+            folder = f"{args.copy_folder}/" + t.replace(".", "_")
+            if args.copy:
+                image_copy(a, folder)
 
-    end = timer()
-    print(f"Processing time: {end-start:.3f} seconds")
+        end = timer()
+        print(f"Processing time: {end-start:.3f} seconds")
