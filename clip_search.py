@@ -161,7 +161,9 @@ if __name__ == "__main__":
         print(f"Results for \"{args.format + t}:\"")
         print("-"*55)
         for i in range(args.results):
-            print(f"{os.path.basename(a[i][0])[:min(len(a[i][0]), 27)]:29s} {i:03d} | similarity {a[i][1]*100:.3f}%")
+            # Change image path output to include the subfolder if recursive
+            image_path = os.path.basename(a[i][0]) if not args.recursive else os.path.relpath(a[i][0], args.folder)
+            print(f"{i:03d} | similarity {a[i][1]*100:.3f}% | {image_path}")
         print("-"*55)
         folder = f"{args.copy_folder}/" + t.replace(".", "_")
         if args.copy:
