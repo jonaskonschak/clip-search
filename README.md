@@ -27,7 +27,7 @@ cs.search(texts=["car", "house"], results=5)
 # Search for "car" and house.png, copy results to the folders ./results/car and ./results/house.png
 cs.search(texts=["car"], images=["house.png"], outdir="./results")
 ```
-## CLI Usage
+## CLI Usage (TODO)
 ```
 usage: search.py [-h] -d DIR [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-o OUTDIR] [-se SAVE_EVERY]
                  [-de DEVICE] [-rc]
