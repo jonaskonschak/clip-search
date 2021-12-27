@@ -24,7 +24,7 @@ cs = CLIPSearcher(device="cuda")
 cs.load_dir("path/to/image/folder", recursive=True)
 # Search for "car" and "house", show 5 results
 cs.search(texts=["car", "house"], results=5)
-# Search for "car" and house.png, copy results to ./results
+# Search for "car" and house.png, copy results to the folders ./results/car and ./results/house.png
 cs.search(texts=["car"], images=["house.png"], outdir="./results")
 ```
 ## CLI Usage
