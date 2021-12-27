@@ -29,12 +29,13 @@ cs.search(texts=["car"], images=["house.png"], outdir="./results")
 ```
 ## CLI Usage (TODO)
 ```
-usage: search.py [-h] -d DIR [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-o OUTDIR] [-se SAVE_EVERY]
-                 [-de DEVICE] [-rc]
+usage: search.py [-h] -d DIR [-sp STORE_PATH] [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-o OUTDIR]
+                 [-se SAVE_EVERY] [-de DEVICE] [-rc] [-dln]
 
 optional arguments:
   -h, --help            show this help message and exit
   -d DIR, --dir DIR
+  -sp STORE_PATH, --store_path STORE_PATH
   -t TEXTS [TEXTS ...], --texts TEXTS [TEXTS ...]
   -i IMAGES [IMAGES ...], --images IMAGES [IMAGES ...]
   -r RESULTS, --results RESULTS
@@ -42,4 +43,5 @@ optional arguments:
   -se SAVE_EVERY, --save_every SAVE_EVERY
   -de DEVICE, --device DEVICE
   -rc, --recursive
+  -dln, --dont_load_new
 ```
