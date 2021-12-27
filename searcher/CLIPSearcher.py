@@ -132,7 +132,7 @@ class CLIPSearcher:
             print(f"Results for \"{target}\":")
             print("-"*50)
             for r, result in enumerate(results):
-                print(f"{r:02d}: {100.0*similarities[r]:.2f}% | {result}: ")
+                print(f"{r:02d} | {100.0*similarities[r]:.2f}% | {result}")
             print("-"*50)
     
     def copy(self, targets, topidx, outdir):

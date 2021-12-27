@@ -5,6 +5,11 @@ def get_args():
     parser.add_argument("-d",
                         "--dir",
                         required=True)
+    
+    parser.add_argument("-sp",
+                        "--store_path",
+                        type=str,
+                        default="./stored")
 
     parser.add_argument("-t",
                         "--texts",
