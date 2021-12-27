@@ -8,12 +8,12 @@ def get_args():
 
     parser.add_argument("-t",
                         "--texts",
-                        type=list,
+                        nargs="+",
                         default=None)
     
     parser.add_argument("-i",
                         "--images",
-                        type=list,
+                        nargs="+",
                         default=None)
 
     parser.add_argument("-r",

@@ -146,3 +146,6 @@ class CLIPSearcher:
                     shutil.copy(result, result_path)
                 except:
                     print(f"Could not copy {result}")
+    
+    def __repr__(self):
+        return f"CLIPSearcher(model={self.model_name}, device={self.device})"
