@@ -28,4 +28,18 @@ cs.search(texts=["car", "house"], results=5)
 cs.search(texts=["car"], images=["house.png"], outdir="./results")
 ```
 ## CLI Usage
-TODO
+```
+usage: search.py [-h] -d DIR [-t TEXTS [TEXTS ...]] [-i IMAGES [IMAGES ...]] [-r RESULTS] [-o OUTDIR] [-se SAVE_EVERY]
+                 [-de DEVICE] [-rc]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DIR, --dir DIR
+  -t TEXTS [TEXTS ...], --texts TEXTS [TEXTS ...]
+  -i IMAGES [IMAGES ...], --images IMAGES [IMAGES ...]
+  -r RESULTS, --results RESULTS
+  -o OUTDIR, --outdir OUTDIR
+  -se SAVE_EVERY, --save_every SAVE_EVERY
+  -de DEVICE, --device DEVICE
+  -rc, --recursive
+```
