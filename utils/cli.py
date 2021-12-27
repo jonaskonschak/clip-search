@@ -43,5 +43,9 @@ def get_args():
     parser.add_argument("-rc",
                         "--recursive",
                         action="store_true")
+    
+    parser.add_argument("-dln",
+                        "--dont_load_new",
+                        action="store_true")
 
     return parser.parse_args()

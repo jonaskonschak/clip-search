@@ -34,7 +34,7 @@ class CLIPSearcher:
         print("Done.")
 
     @torch.inference_mode()
-    def load_dir(self, path, save_every=1000, recursive=True):
+    def load_dir(self, path, save_every=1000, recursive:bool=True, load_new:bool=True):
         print(f"Loading dir {path}.")
         path = os.path.normcase(path)
         self.active_path = path
@@ -59,31 +59,33 @@ class CLIPSearcher:
             self.active_dict = dict()
         
         filepaths = []
-        for root, _, filenames in os.walk(path):
-            for filename in filenames:
-                if filename.endswith(self.exts):
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.normcase(filepath)
-                    filepaths.append(filepath)
-            if not recursive:
-                break
+        if load_new:
+            for root, _, filenames in os.walk(path):
+                for filename in filenames:
+                    if filename.endswith(self.exts):
+                        filepath = os.path.join(root, filename)
+                        filepath = os.path.normcase(filepath)
+                        filepaths.append(filepath)
+                if not recursive:
+                    break
+            
+            i = 0
+            print("Loading new images.")
+            for filepath in filepaths:
+                if filepath not in self.active_dict.keys():
+                    try:
+                        self.active_dict[filepath] = self.load_features(filepath)
+                        i += 1
+                    except Exception as e:
+                        print(e)
+                        pass
+                    if i % save_every == 0 and i != 0:
+                        print(f"Loaded {i} new images.")
+                        self.save_dict(store_file)
+            
+            print(f"Done. {i} new images, {len(self.active_dict)} total.")
+            self.save_dict(store_file)
         
-        i = 0
-        print("Loading new images.")
-        for filepath in filepaths:
-            if filepath not in self.active_dict.keys():
-                try:
-                    self.active_dict[filepath] = self.load_features(filepath)
-                    i += 1
-                except Exception as e:
-                    print(e)
-                    pass
-                if i % save_every == 0 and i != 0:
-                    print(f"Loaded {i} new images.")
-                    self.save_dict(store_file)
-        
-        print(f"Done. {i} new images, {len(self.active_dict)} total.")
-        self.save_dict(store_file)
         self.active_list = list(self.active_dict.keys())
         self.active_features = torch.cat(tuple(self.active_dict.values())).to(torch.half if self.device.type == "cuda" else torch.float)
 
@@ -94,7 +96,7 @@ class CLIPSearcher:
             features = self.model.encode_text(text)
             features /= features.norm(dim=-1, keepdim=True)
         else:
-            image = Image.open(target).convert("RGB")
+            image = Image.open(target)
             image = self.preprocess(image).to(self.device).unsqueeze(0)
             features = self.model.encode_image(image)
             features /= features.norm(dim=-1, keepdim=True)
