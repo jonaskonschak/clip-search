@@ -1,0 +1,1 @@
+from searcher.CLIPSearcher import *

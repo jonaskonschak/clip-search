@@ -1,0 +1,5 @@
+.vscode
+ignore
+stored
+results
+__pycache__
