@@ -1,4 +1,4 @@
-import os
+import os, sys
 import json
 from functools import wraps
 from time import time
@@ -33,4 +33,16 @@ def timing(f):
         print('func:%r args:[%r, %r] took: %2.4f sec' % (f.__name__, args, kw, te-ts))
         return result
     return wrap
+
+class Timer:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+        self.start = time()
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.time = time()-self.start
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+        print(self.time)
 
