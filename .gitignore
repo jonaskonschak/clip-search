@@ -3,4 +3,5 @@ ignore
 stored
 results
 scripts
+bench.*
 __pycache__
