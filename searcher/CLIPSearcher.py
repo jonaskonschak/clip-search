@@ -96,7 +96,7 @@ class CLIPSearcher:
             features = self.model.encode_text(text)
             features /= features.norm(dim=-1, keepdim=True)
         else:
-            image = Image.open(target)
+            image = load_image(target)
             image = self.preprocess(image).to(self.device).unsqueeze(0)
             features = self.model.encode_image(image)
             features /= features.norm(dim=-1, keepdim=True)
@@ -138,6 +138,7 @@ class CLIPSearcher:
             print("-"*50)
     
     def copy(self, targets, topidx, outdir):
+        print(f"Copying {topidx.shape[0]*topidx.shape[1]} images.")
         for t, target in enumerate(targets):
             target_outdir = os.path.join(outdir, safe_name(target))
             os.makedirs(target_outdir, exist_ok=True)

@@ -2,7 +2,8 @@ import os, sys
 import json
 from functools import wraps
 from time import time
-
+import requests
+from PIL import Image
 
 def load_json(filepath, warn=True):
     if os.path.isfile(filepath):
@@ -46,3 +47,14 @@ class Timer:
         sys.stdout = self._original_stdout
         print(self.time)
 
+def load_image(path):
+    if os.path.isfile(path):
+        return Image.open(path)
+    else:
+        try:
+            with requests.get(path, stream=True) as req:
+                image = Image.open(req.raw)
+                return image
+        except Exception as e:
+            print(f"Could not load {path}:")
+            raise e
