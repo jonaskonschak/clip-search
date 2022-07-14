@@ -1,6 +1,6 @@
 import argparse
 import os
-from searcher import CLIPSearcher
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -53,6 +53,7 @@ def get_args():
     return parser.parse_args()
 
 def main():
+    from searcher import CLIPSearcher
     args = get_args()
     cs = CLIPSearcher(device=args.device, store_path=args.store_path)
     cs.load_dir(args.dir, save_every=args.save_every, recursive=args.recursive, load_new=(not args.dont_load_new))
