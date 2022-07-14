@@ -51,7 +51,7 @@ class CLIPSearcher:
             try:
                 self.active_dict = torch.load(store_file, map_location=self.device)
                 print(f"Loaded existing dict:{store_file} with {len(self.active_dict)} images.")
-            except FileNotFoundError:
+            except:
                 self.active_dict = dict()
                 print("No existing dict found. Creating new dict.")
         else:
@@ -105,7 +105,7 @@ class CLIPSearcher:
         torch.save(self.active_dict, filepath)
     
     @torch.inference_mode()
-    def search(self, texts:list=None, images:list=None, results=5, print_results=True, outdir=None):
+    def search(self, texts:list=None, images:list=None, results=5, print_results=True, outdir=None, rename=False):
         assert texts or images, "Search failed: Either texts or images need to be specified."
         targets = []
         targets_features_list = []
@@ -122,7 +122,7 @@ class CLIPSearcher:
         if print_results:
             self.print_results(targets, topsim, topidx)
         if outdir:
-            self.copy(targets, topidx, outdir)
+            self.copy(targets, topidx, outdir, rename)
         return targets, topsim, topidx
 
     def print_results(self, targets, topsim, topidx):
@@ -136,14 +136,17 @@ class CLIPSearcher:
                 print(f"{r:02d} | {100.0*similarities[r]:.2f}% | {result}")
             print("-"*50)
     
-    def copy(self, targets, topidx, outdir):
+    def copy(self, targets, topidx, outdir, rename=False):
         print(f"Copying {topidx.shape[0]*topidx.shape[1]} images.")
         for t, target in enumerate(targets):
             target_outdir = os.path.join(outdir, safe_name(target))
             os.makedirs(target_outdir, exist_ok=True)
             results = [self.active_list[idx] for idx in topidx[t].tolist()]
-            for result in results:
-                result_path = os.path.join(target_outdir, os.path.basename(result))
+            for r, result in enumerate(results):
+                if rename:
+                    result_path = os.path.join(target_outdir, f"{r:02d}__" + os.path.basename(result))
+                else:
+                    result_path = os.path.join(target_outdir, os.path.basename(result))
                 try:
                     shutil.copy(result, result_path)
                 except:
