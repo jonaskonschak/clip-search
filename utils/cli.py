@@ -1,4 +1,6 @@
 import argparse
+import os
+from searcher import CLIPSearcher
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -9,7 +11,7 @@ def get_args():
     parser.add_argument("-sp",
                         "--store_path",
                         type=str,
-                        default="./stored")
+                        default=os.path.join(os.path.expanduser("~"), "/clip_search"))
 
     parser.add_argument("-t",
                         "--texts",
@@ -49,3 +51,9 @@ def get_args():
                         action="store_true")
 
     return parser.parse_args()
+
+def main():
+    args = get_args()
+    cs = CLIPSearcher(device=args.device, store_path=args.store_path)
+    cs.load_dir(args.dir, save_every=args.save_every, recursive=args.recursive, load_new=(not args.dont_load_new))
+    cs.search(texts=args.texts, images=args.images, results=args.results, outdir=args.outdir)

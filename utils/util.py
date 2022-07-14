@@ -48,13 +48,15 @@ class Timer:
         print(self.time)
 
 def load_image(path):
-    if os.path.isfile(path):
-        return Image.open(path)
-    else:
-        try:
+    try:
+        if os.path.isfile(path):
+            image = Image.open(path)
+            return image
+        else:
             with requests.get(path, stream=True) as req:
                 image = Image.open(req.raw)
                 return image
-        except Exception as e:
-            print(f"Could not load {path}:")
-            raise e
+    except Exception as e:
+        print(f"Could not load {path}:")
+        raise e
+

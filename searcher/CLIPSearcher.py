@@ -2,7 +2,6 @@ import os
 import shutil
 from uuid import uuid4
 import torch
-from PIL import Image
 import clip
 from utils import *
 
@@ -11,7 +10,7 @@ class CLIPSearcher:
     def __init__(self,
                 device:str="cpu",
                 model_name:str="ViT-B/32",
-                store_path="./stored",
+                store_path=os.path.join(os.path.expanduser("~"), "/clip_search"),
                 exts:tuple=("jpg", "jpeg", "jfif", "png")):
         print(f"Using Device {device}")
         self.device = torch.device(device)
@@ -36,7 +35,7 @@ class CLIPSearcher:
     @torch.inference_mode()
     def load_dir(self, path, save_every=1000, recursive:bool=True, load_new:bool=True):
         print(f"Loading dir {path}.")
-        path = os.path.normcase(path)
+        path = os.path.normcase(os.path.abspath(path))
         self.active_path = path
         if path in self.dirs.keys():
             uuid = self.dirs[path]
