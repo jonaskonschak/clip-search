@@ -9,7 +9,7 @@ from utils import *
 class CLIPSearcher:
     def __init__(self,
                 device:str="cpu",
-                model_name:str="ViT-B/32",
+                model_name:str="ViT-L/14@336px",
                 store_path=os.path.join(os.path.expanduser("~"), "/clip_search"),
                 exts:tuple=("jpg", "jpeg", "jfif", "png")):
         print(f"Using Device {device}")
